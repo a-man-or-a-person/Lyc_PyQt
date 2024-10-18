@@ -34,8 +34,8 @@ class TableWork(PyQt6.QtWidgets.QWidget):
         self.delete_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Delete')
 
         self.table = PyQt6.QtWidgets.QTableWidget(self)
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(['id', 'date', 'category', 'amount', 'description'])
+        # self.table.setColumnCount(5)
+        # self.table.setHorizontalHeaderLabels(['id', 'date', 'category', 'amount', 'description'])
 
         self.date_and_category_layout.addWidget(PyQt6.QtWidgets.QLabel('Date:'))
         self.date_and_category_layout.addWidget(self.date_edit)
