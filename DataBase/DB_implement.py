@@ -10,10 +10,11 @@ class Table_work(project.UI.work_with_data_ui.TableWork):
     def __init__(self):
         super().__init__()
         self.connect_db()
-        self.add_btn.clicked.connect(self.get_column_names)
-        self.delete_btn.clicked.connect(self.get_all_items)
+        self.add_btn.clicked.connect(self.get_all_items)
+        self.delete_btn.clicked.connect(self.delete)
         self.category_combo_box.addItems(['first', 'second', 'third'])
-
+        self.dev_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='dev')
+        self.dev_btn.clicked.connect(self.get_column_names)
 
     def connect_db(self):
         self.conn = sqlite3.connect('user_data.db')
@@ -38,10 +39,7 @@ class Table_work(project.UI.work_with_data_ui.TableWork):
 
     def get_column_names(self, table='test_data'):
         a = 'SELECT * FROM {0} LIMIT 1'.format(table)
-
-        print(self.cursor.execute(a).fetchall())
-        print([x[0] for x in self.cursor.execute(a).description])
-
+        return [x[0] for x in self.cursor.execute(a).description]
 
     def get_all_items(self):
         a = '''
@@ -52,14 +50,26 @@ class Table_work(project.UI.work_with_data_ui.TableWork):
         if data:
             self.table.setColumnCount(len(data[0]))
             self.table.setHorizontalHeaderLabels(self.get_column_names('test_data'))
-            # self.table.insertRow(row)
-
-        # print(self.description_edit.text())
-        # a = self.cursor.execute(a, [str(self.description_edit.text())])
-        # print(a.fetchall())
+            for row, line in enumerate(data):
+                self.table.insertRow(row)
+                for pos, info in enumerate(line):
+                    self.table.setItem(row, pos, PyQt6.QtWidgets.QTableWidgetItem(str(info)))
 
     def add(self):
         print(self.category_combo_box.currentText())
+
+    def delete(self, table='test_data'):
+        selected = self.table.currentRow()
+        print(selected)
+        if selected == -1:
+            PyQt6.QtWidgets.QMessageBox.warning(self, "No row chosen")
+            return None
+
+        selected_id = self.table.item(selected, 0).text()
+        db_request = 'DELETE FROM {} WHERE id = ?'.format([table])
+        self.cursor.execute(db_request, selected_id)
+        self.conn.commit()
+        self.get_all_items()
 
 
 if __name__ == '__main__':
