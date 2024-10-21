@@ -15,7 +15,7 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
     @db_conn_wrap
     def get_column_names(self, table='test_data', **kwargs):
         if not ('conn' in kwargs or 'cursor' in kwargs):
-            raise ValueError ('No connection to db had been provided')
+            raise ValueError('No connection to db had been provided')
         conn = kwargs['conn']
         cursor = kwargs['cursor']
 
@@ -26,7 +26,7 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
     @db_conn_wrap
     def get_all_items(self, *args, **kwargs):
         if not ('conn' in kwargs or 'cursor' in kwargs):
-            raise ValueError ('No connection to db had been provided')
+            raise ValueError('No connection to db had been provided')
         conn = kwargs['conn']
         cursor = kwargs['cursor']
 
@@ -34,7 +34,7 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
         SELECT * FROM test_data
         '''
         data = cursor.execute(a).fetchall()
-        print(data, 'get_items')
+        self.table.setRowCount(0)
         if data:
             self.table.setColumnCount(len(data[0]))
             self.table.setHorizontalHeaderLabels(self.get_column_names('test_data'))
@@ -58,15 +58,16 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
             table = kwargs['table']
 
         selected = self.table.currentRow()
-        print(selected)
         if selected == -1:
             PyQt6.QtWidgets.QMessageBox.warning(self, 'Warning', "No row chosen")
             return None
 
         selected_id = self.table.item(selected, 0).text()
         request = f'DELETE FROM {table} WHERE id = ?'
-        cursor.execute(request, selected_id)
+        print(selected_id, 'selected_id')
+        cursor.execute(request, [selected_id])
         conn.commit()
+        self.get_all_items()
 
 
 def except_hook(cls, exception, traceback):
