@@ -1,52 +1,40 @@
-import sqlite3
 import sys
 
 import PyQt6.QtWidgets
 
-import project.UI.work_with_data_ui
+import Lyc_PyQt.UI.work_with_data_ui
+from Lyc_PyQt.DataBase.decorators import db_conn_wrap
 
 
-class Table_work(project.UI.work_with_data_ui.TableWork):
+class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
     def __init__(self):
         super().__init__()
-        self.connect_db()
         self.add_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        self.category_combo_box.addItems(['first', 'second', 'third'])
-        self.dev_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='dev')
-        self.dev_btn.clicked.connect(self.get_column_names)
 
-    def connect_db(self):
-        self.conn = sqlite3.connect('user_data.db')
-        self.cursor = self.conn.cursor()
-        self.cursor.execute('''
-                            CREATE TABLE IF NOT EXISTS test_data(
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                category TEXT NOT NULL,
-                                value TEXT NOT NULL
-                                )
-                            ''')
+    @db_conn_wrap
+    def get_column_names(self, table='test_data', **kwargs):
+        if not ('conn' in kwargs or 'cursor' in kwargs):
+            raise ValueError ('No connection to db had been provided')
+        conn = kwargs['conn']
+        cursor = kwargs['cursor']
 
-    def add_item(self):
-        add_item = '''
-        INSERT INTO test_data (category, value)
-        VALUES(?, ?)
-        '''
-        vals = ['fruits', 'grapes']
-        self.cursor.execute(add_item, vals)
-        self.conn.commit()
-        print('Item added')
-
-    def get_column_names(self, table='test_data'):
         a = 'SELECT * FROM {0} LIMIT 1'.format(table)
-        return [x[0] for x in self.cursor.execute(a).description]
+        res = [x[0] for x in cursor.execute(a).description]
+        return res
 
-    def get_all_items(self):
+    @db_conn_wrap
+    def get_all_items(self, *args, **kwargs):
+        if not ('conn' in kwargs or 'cursor' in kwargs):
+            raise ValueError ('No connection to db had been provided')
+        conn = kwargs['conn']
+        cursor = kwargs['cursor']
+
         a = '''
         SELECT * FROM test_data
         '''
-        data = self.cursor.execute(a).fetchall()
-        print(data)
+        data = cursor.execute(a).fetchall()
+        print(data, 'get_items')
         if data:
             self.table.setColumnCount(len(data[0]))
             self.table.setHorizontalHeaderLabels(self.get_column_names('test_data'))
@@ -58,22 +46,36 @@ class Table_work(project.UI.work_with_data_ui.TableWork):
     def add(self):
         print(self.category_combo_box.currentText())
 
-    def delete(self, table='test_data'):
+    @db_conn_wrap
+    def delete(self, *args, **kwargs):
+        if not ('conn' in kwargs or 'cursor' in kwargs):
+            raise ValueError('No connection to db had been provided')
+        conn = kwargs['conn']
+        cursor = kwargs['cursor']
+
+        table = 'test_data'
+        if 'table' in kwargs:
+            table = kwargs['table']
+
         selected = self.table.currentRow()
         print(selected)
         if selected == -1:
-            PyQt6.QtWidgets.QMessageBox.warning(self, "No row chosen")
+            PyQt6.QtWidgets.QMessageBox.warning(self, 'Warning', "No row chosen")
             return None
 
         selected_id = self.table.item(selected, 0).text()
-        db_request = 'DELETE FROM {} WHERE id = ?'.format([table])
-        self.cursor.execute(db_request, selected_id)
-        self.conn.commit()
-        self.get_all_items()
+        request = f'DELETE FROM {table} WHERE id = ?'
+        cursor.execute(request, selected_id)
+        conn.commit()
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
 
 
 if __name__ == '__main__':
     app = PyQt6.QtWidgets.QApplication(sys.argv)
     window = Table_work()
     window.show()
+    sys.excepthook = except_hook
     sys.exit(app.exec())
