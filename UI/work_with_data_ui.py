@@ -1,14 +1,9 @@
 import sys
 
-import sqlite3
-
 import PyQt6.QtWidgets
 
 
-# from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout
-
-
-class TableWork(PyQt6.QtWidgets.QWidget):
+class TableWork(PyQt6.QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
