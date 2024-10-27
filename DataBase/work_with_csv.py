@@ -12,6 +12,7 @@ from Lyc_PyQt.DataBase.decorators import db_conn_wrap
 class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
     def __init__(self):
         super().__init__()
+        self.display_all_files()
         self.refresh_btn.clicked.connect(self.display_all_files)
         self.add_csv_btn.clicked.connect(self.add_csv)
         self.del_csv_btn.clicked.connect(self.delete)
@@ -83,7 +84,7 @@ class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
         exel_file = pd.ExcelFile(path)
         sheet1 = exel_file.parse(0)
         columns = list(sheet1.columns)
-        db_request = f'CREATE TABLE {name} ('
+        db_request = f'CREATE TABLE {name} ( id INTEGER PRIMARY KEY,'
         for i in columns[:-1]:
             db_request += f'{i} TEXT, '
         db_request += f'{columns[-1]} TEXT)'
@@ -96,6 +97,7 @@ class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
         cursor.executemany(db_request, sheet1.values)
         cursor.execute(f'INSERT INTO csv_files (name) VALUES (?)', [name])
         conn.commit()
+        self.display_all_files()
 
 
 def except_hook(cls, exception, traceback):

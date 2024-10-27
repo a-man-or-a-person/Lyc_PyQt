@@ -16,8 +16,8 @@ class CsvViews(PyQt6.QtWidgets.QWidget):
         self.btn_layout2 = PyQt6.QtWidgets.QHBoxLayout(self)
 
         self.refresh_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Refresh')
-        self.add_csv_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Add CSV File')
-        self.del_csv_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Delete CSV File')
+        self.add_csv_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Add Exel(XLS) File')
+        self.del_csv_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Delete File')
         self.empty_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Empty')
 
         self.table = PyQt6.QtWidgets.QTableWidget(self)
