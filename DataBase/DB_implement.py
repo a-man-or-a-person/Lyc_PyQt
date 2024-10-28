@@ -16,7 +16,6 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
         self.delete_btn.clicked.connect(self.delete)
         self.add_exel_file_btn.clicked.connect(self.add_exel_file)
         self.combo_box()
-        # self.files_combo_box.toggled.connect(self.combo_box)
 
 
     @db_conn_wrap
@@ -25,8 +24,15 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
             PyQt6.QtWidgets.QMessageBox.critical(self, 'DB_conn_error', "DB was not provided or couldn't connect")
         conn = kwargs['conn']
         cursor = kwargs['cursor']
+        cursor.execute('''CREATE TABLE IF NOT EXISTS csv_files (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT UNIQUE
+                )''')
         self.files_combo_box.clear()
-        self.files_combo_box.addItems([x[1] for x in cursor.execute("SELECT * FROM csv_files").fetchall()])
+        tables = cursor.execute("SELECT * FROM csv_files").fetchall()
+        if tables:
+            self.files_combo_box.addItems([x[1] for x in tables])
+        conn.commit()
 
     def add_exel_file(self):
         self.add_exel_window = Lyc_PyQt.DataBase.work_with_csv.CsvLayout()

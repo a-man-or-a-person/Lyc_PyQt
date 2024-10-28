@@ -1,10 +1,10 @@
 import sys
 
-import PyQt6.QtWidgets as QT
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout
+import PyQt6.QtWidgets
+from PyQt6.QtWidgets import QVBoxLayout
 
 
-class MainWindow(QT.QWidget):
+class MainWindow(PyQt6.QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -13,27 +13,23 @@ class MainWindow(QT.QWidget):
         self.setWindowTitle('Statistics')
 
         self.main_layout = QVBoxLayout(self)
-        self.combo_box_layout = QHBoxLayout(self)
+        self.select_file_layout = PyQt6.QtWidgets.QHBoxLayout(self)
 
-        self.label = QT.QLabel('Select some options:')
+        self.files_combo_box = PyQt6.QtWidgets.QComboBox(self)
+        self.refresh_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Refresh')
 
-        self.combo_box1 = QT.QComboBox(self)
-        self.combo_box2 = QT.QComboBox(self)
-        self.combo_box3 = QT.QComboBox(self)
+        self.plot_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Plot')
 
-        self.view_stats = QT.QTextBrowser(self)
+        self.select_file_layout.addWidget(PyQt6.QtWidgets.QLabel('Select file:'))
+        self.select_file_layout.addWidget(self.files_combo_box)
+        self.select_file_layout.addWidget(self.refresh_btn)
 
-        self.combo_box_layout.addWidget(self.combo_box1)
-        self.combo_box_layout.addWidget(self.combo_box2)
-        self.combo_box_layout.addWidget(self.combo_box3)
-
-        self.main_layout.addWidget(self.label)
-        self.main_layout.addLayout(self.combo_box_layout)
-        self.main_layout.addWidget(self.view_stats)
+        self.main_layout.addLayout(self.select_file_layout)
+        self.main_layout.addWidget(self.plot_btn)
 
 
 if __name__ == '__main__':
-    app = QT.QApplication(sys.argv)
+    app = PyQt6.QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
