@@ -17,12 +17,12 @@ class MainWindow(QT.QWidget):
 
         self.header_text = QT.QLabel('Welcome to our application!')
 
-        self.button1 = QT.QPushButton('Статистика')
+        self.statistics_btn = QT.QPushButton('Статистика')
         self.downloaded_btn = QT.QPushButton('Загруженные данные')
         self.button3 = QT.QPushButton('Аналитика')
         self.button4 = QT.QPushButton('Экспорт данных')
 
-        self.buttons_layout.addWidget(self.button1, 0, 0)
+        self.buttons_layout.addWidget(self.statistics_btn, 0, 0)
         self.buttons_layout.addWidget(self.downloaded_btn, 0, 1)
         self.buttons_layout.addWidget(self.button3, 1, 0)
         self.buttons_layout.addWidget(self.button4, 1, 1)

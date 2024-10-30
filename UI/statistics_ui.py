@@ -4,7 +4,7 @@ import PyQt6.QtWidgets
 from PyQt6.QtWidgets import QVBoxLayout
 
 
-class MainWindow(PyQt6.QtWidgets.QMainWindow):
+class MainWindow(PyQt6.QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
