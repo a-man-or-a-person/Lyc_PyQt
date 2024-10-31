@@ -9,7 +9,7 @@ class TableWork(PyQt6.QtWidgets.QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Work With Selected File')
+        self.setWindowTitle("Work With Selected File")
 
         self.main_layout = PyQt6.QtWidgets.QVBoxLayout(self)
 
@@ -20,19 +20,19 @@ class TableWork(PyQt6.QtWidgets.QWidget):
 
         self.files_combo_box = PyQt6.QtWidgets.QComboBox(self)
 
-        self.refresh_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Refresh')
-        self.delete_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Delete')
+        self.refresh_btn = PyQt6.QtWidgets.QPushButton(parent=self, text="Refresh")
+        self.delete_btn = PyQt6.QtWidgets.QPushButton(parent=self, text="Delete")
 
-        self.add_exel_file_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Add exel file')
-        self.select_btn = PyQt6.QtWidgets.QPushButton(parent=self, text='Select')
+        self.add_exel_file_btn = PyQt6.QtWidgets.QPushButton(
+            parent=self, text="Add exel file"
+        )
+        self.select_btn = PyQt6.QtWidgets.QPushButton(parent=self, text="Select")
 
         self.table = PyQt6.QtWidgets.QTableWidget(self)
 
-        self.select_file_layout.addWidget(PyQt6.QtWidgets.QLabel('Select file:'))
+        self.select_file_layout.addWidget(PyQt6.QtWidgets.QLabel("Select file:"))
         self.select_file_layout.addWidget(self.files_combo_box)
         self.select_file_layout.addWidget(self.refresh_btn)
-
-
 
         self.btns_layout2.addWidget(self.select_btn)
         self.btns_layout2.addWidget(self.add_exel_file_btn)
@@ -45,7 +45,7 @@ class TableWork(PyQt6.QtWidgets.QWidget):
         self.main_layout.addWidget(self.table)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = PyQt6.QtWidgets.QApplication(sys.argv)
     window = TableWork()
     window.show()

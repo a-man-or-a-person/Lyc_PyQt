@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 import Lyc_PyQt.UI.statistics_ui
 from Lyc_PyQt.DataBase.decorators import db_conn_wrap
 
-matplotlib.use('QtAgg')
+matplotlib.use("QtAgg")
 
 
 class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
@@ -29,10 +29,12 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
 
     @db_conn_wrap
     def refresh_boxes(self, *args, **kwargs):
-        if not ('conn' in kwargs or 'cursor' in kwargs):
-            PyQt6.QtWidgets.QMessageBox.critical(self, 'DB_conn_error', "DB was not provided or couldn't connect")
-        conn = kwargs['conn']
-        cursor = kwargs['cursor']
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         self.value_box.clear()
         self.label_box.clear()
@@ -50,10 +52,12 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
 
     @db_conn_wrap
     def update_pie_graph(self, *args, **kwargs):
-        if not ('conn' in kwargs or 'cursor' in kwargs):
-            PyQt6.QtWidgets.QMessageBox.critical(self, 'DB_conn_error', "DB was not provided or couldn't connect")
-        conn = kwargs['conn']
-        cursor = kwargs['cursor']
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         self.figure.clear()
         self.ax = self.figure.subplots()
@@ -68,14 +72,18 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
 
     @db_conn_wrap
     def combo_box(self, *args, **kwargs):
-        if not ('conn' in kwargs or 'cursor' in kwargs):
-            PyQt6.QtWidgets.QMessageBox.critical(self, 'DB_conn_error', "DB was not provided or couldn't connect")
-        conn = kwargs['conn']
-        cursor = kwargs['cursor']
-        cursor.execute('''CREATE TABLE IF NOT EXISTS csv_files (
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS csv_files (
                         id INTEGER PRIMARY KEY,
                         name TEXT UNIQUE
-                    )''')
+                    )"""
+        )
         self.files_combo_box.clear()
         tables = cursor.execute("SELECT * FROM csv_files").fetchall()
         if tables:
@@ -87,7 +95,7 @@ def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = PyQt6.QtWidgets.QApplication(sys.argv)
     window = StatisticsWindow()
     window.show()
