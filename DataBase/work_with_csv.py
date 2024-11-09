@@ -81,7 +81,8 @@ class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
         PyQt6.QtWidgets.QMessageBox.warning(
             self, "Warning", "File should contain headers"
         )
-        path = PyQt6.QtWidgets.QFileDialog.getOpenFileName(self, "Select file")[0]
+        path = PyQt6.QtWidgets.QFileDialog.getOpenFileName(self, "Select file", 'C:/',
+                                                           'Exel (*.xlsx, *xls, *csv);; Все файлы (*)')[0]
         if not path:
             PyQt6.QtWidgets.QMessageBox.critical(
                 self, "File selection error", "No file was selected"
