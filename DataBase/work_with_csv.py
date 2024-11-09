@@ -1,12 +1,11 @@
 import sqlite3
 import sys
 import pandas as pd
-import re
 
 import PyQt6.QtWidgets
 
 import Lyc_PyQt.UI.csv_input_ui
-from Lyc_PyQt.DataBase.decorators import db_conn_wrap
+from Lyc_PyQt.decorators import db_conn_wrap
 
 
 class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):

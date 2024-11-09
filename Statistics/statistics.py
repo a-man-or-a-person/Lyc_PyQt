@@ -2,15 +2,13 @@ import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 
 import PyQt6.QtWidgets
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
 import Lyc_PyQt.UI.statistics_ui
-from Lyc_PyQt.DataBase.decorators import db_conn_wrap
+from Lyc_PyQt.decorators import db_conn_wrap
 
 matplotlib.use("QtAgg")
 

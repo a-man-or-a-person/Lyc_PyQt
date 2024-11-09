@@ -3,7 +3,7 @@ import sys
 import PyQt6.QtWidgets
 
 import Lyc_PyQt.UI.work_with_data_ui
-from Lyc_PyQt.DataBase.decorators import db_conn_wrap
+from Lyc_PyQt.decorators import db_conn_wrap
 import Lyc_PyQt.UI.main_menu_ui
 import Lyc_PyQt.DataBase.work_with_csv
 
