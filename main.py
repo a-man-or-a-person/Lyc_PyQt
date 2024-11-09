@@ -4,7 +4,7 @@ import PyQt6.QtWidgets
 
 import Lyc_PyQt.UI.main_menu_ui
 import Lyc_PyQt.DataBase.DB_implement
-import Lyc_PyQt.DataBase.statistics
+import Lyc_PyQt.Statistics.statistics
 
 
 class MainMenu(Lyc_PyQt.UI.main_menu_ui.MainWindow):
@@ -18,7 +18,7 @@ class MainMenu(Lyc_PyQt.UI.main_menu_ui.MainWindow):
         self.downloads_window.show()
 
     def show_statistics(self):
-        self.stats_window = Lyc_PyQt.DataBase.statistics.StatisticsWindow()
+        self.stats_window = Lyc_PyQt.Statistics.statistics.StatisticsWindow()
         self.stats_window.show()
 
 
