@@ -2,6 +2,7 @@ import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 import PyQt6.QtWidgets
 
@@ -14,22 +15,27 @@ matplotlib.use("QtAgg")
 
 
 class MplCanvas(FigureCanvasQTAgg):
-    def init(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
-        super().init(fig)
+        super().__init__(fig)
+
 
 class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.refresh_btn.clicked.connect(self.combo_box)
         self.plot_btn.clicked.connect(self.update_pie_graph)
-        self.combo_box()
-        self.figure = plt.figure(figsize=(6, 15))
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-        self.main_layout.addWidget(self.canvas)
         self.refresh_boxes_btn.clicked.connect(self.refresh_boxes)
-        self.refresh_boxes()
+
+        # self.refresh_boxes()
+        # self.combo_box()
+
+        self.figure = plt.figure(figsize=(6, 15))
+        self.canvas = MplCanvas(parent=self, width=5, height=4, dpi=100)
+        self.main_layout.addWidget(self.canvas)
+        self.plot()
+
 
     @db_conn_wrap
     def refresh_boxes(self, *args, **kwargs):
@@ -53,6 +59,16 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
                 self.value_box.addItem(col)
             except ValueError:
                 self.label_box.addItem(col)
+
+    # Ideas:
+    #     1) Pie plot of prices spent on different categories
+    #     2) Columns histplot month to month money spent
+    #     3) How price changed for certain products
+    def plot(self):
+        data = sns.load_dataset("penguins")
+        sns.histplot(data=data, x="flipper_length_mm", hue="species", multiple="stack", ax=self.canvas.axes)
+        # sns.scatterplot(data=data, x="sepal_length", y="sepal_width", hue="species", ax=self.canvas.axes)
+        self.canvas.draw()
 
     @db_conn_wrap
     def update_pie_graph(self, *args, **kwargs):
