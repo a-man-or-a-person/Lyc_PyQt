@@ -15,10 +15,12 @@ class MainWindow(PyQt6.QtWidgets.QWidget):
         self.main_layout = QVBoxLayout(self)
         self.select_file_layout = PyQt6.QtWidgets.QHBoxLayout(self)
         self.select_values_layout = PyQt6.QtWidgets.QHBoxLayout(self)
+        self.select_plot_layout = PyQt6.QtWidgets.QHBoxLayout(self)
 
         self.files_combo_box = PyQt6.QtWidgets.QComboBox(self)
         self.refresh_btn = PyQt6.QtWidgets.QPushButton(parent=self, text="Refresh")
 
+        self.graphs_box = PyQt6.QtWidgets.QComboBox(self)
         self.plot_btn = PyQt6.QtWidgets.QPushButton(parent=self, text="Plot")
 
         self.label_box = PyQt6.QtWidgets.QComboBox(self)
@@ -31,6 +33,10 @@ class MainWindow(PyQt6.QtWidgets.QWidget):
         self.select_file_layout.addWidget(self.files_combo_box)
         self.select_file_layout.addWidget(self.refresh_btn)
 
+        self.select_plot_layout.addWidget(PyQt6.QtWidgets.QLabel("Select graph:"))
+        self.select_plot_layout.addWidget(self.graphs_box)
+        self.select_plot_layout.addWidget(self.plot_btn)
+
         self.select_values_layout.addWidget(PyQt6.QtWidgets.QLabel("Select value:"))
         self.select_values_layout.addWidget(self.value_box)
         self.select_values_layout.addWidget(PyQt6.QtWidgets.QLabel("Select labels:"))
@@ -38,7 +44,7 @@ class MainWindow(PyQt6.QtWidgets.QWidget):
         self.select_values_layout.addWidget(self.refresh_boxes_btn)
 
         self.main_layout.addLayout(self.select_file_layout)
-        self.main_layout.addWidget(self.plot_btn)
+        self.main_layout.addLayout(self.select_plot_layout)
         self.main_layout.addLayout(self.select_values_layout)
 
 
