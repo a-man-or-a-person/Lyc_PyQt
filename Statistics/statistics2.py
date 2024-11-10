@@ -28,8 +28,7 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
         self.plot_btn.clicked.connect(self.update_pie_graph)
         self.refresh_boxes_btn.clicked.connect(self.refresh_boxes)
 
-        # self.refresh_boxes()
-        # self.combo_box()
+        self.refresh_boxes()
 
         self.figure = plt.figure(figsize=(6, 15))
         self.canvas = MplCanvas(parent=self, width=5, height=4, dpi=100)
@@ -46,6 +45,7 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
         conn = kwargs["conn"]
         cursor = kwargs["cursor"]
 
+        self.combo_box()
         self.value_box.clear()
         self.label_box.clear()
 
