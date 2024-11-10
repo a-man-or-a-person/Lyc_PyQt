@@ -88,14 +88,24 @@ class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
                 self, "File selection error", "No file was selected"
             )
             return None
-
+        print(path)
         if "/" in path:
             name = path.split("/")[-1]
         else:
             name = path.split("\\")[-1]
         name = "_".join(name.split()).split(".")[0]
-        exel_file = pd.ExcelFile(path)
-        sheet1 = exel_file.parse(0)
+        try:
+            exel_file = pd.ExcelFile(path)
+            sheet1 = exel_file.parse(0)
+        except ValueError:
+            if path.split('.')[-1] == 'csv':
+                sheet1 = pd.read_csv(path)
+            else:
+                PyQt6.QtWidgets.QMessageBox.critical(
+                    self, "File decoding error", "Wrong file type"
+                )
+                return
+
         columns = list(sheet1.columns)
         db_request = f"CREATE TABLE {name} ( id INTEGER PRIMARY KEY,"
         for i in columns[:-1]:
