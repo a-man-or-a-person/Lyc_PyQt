@@ -1,4 +1,5 @@
 import sys
+import traceback
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
@@ -11,8 +12,25 @@ from PyQt6.QtWidgets import (
     QLabel,
     QComboBox,
     QTableWidget,
-    QLineEdit
+    QLineEdit,
+    QMessageBox
 )
+
+import Lyc_PyQt.DataBase
+
+
+def except_hook(cls, exception, tb):
+    error_msg = ''.join(traceback.format_exception(cls, exception, tb))
+    print("Unhandled exception:", error_msg)
+    msg_box = QMessageBox()
+    msg_box.setIcon(QMessageBox.Icon.Critical)
+    msg_box.setWindowTitle("Error")
+    msg_box.setText("An unhandled exception occurred:")
+    msg_box.setInformativeText(error_msg)
+    msg_box.exec()
+
+
+sys.excepthook = except_hook
 
 
 class HomeView(QWidget):
@@ -58,6 +76,7 @@ class CsvViews(QWidget):
         layout.addLayout(btn_layout2)
         layout.addWidget(table)
 
+
 class StatisticsView(QWidget):
     def __init__(self):
         super().__init__()
@@ -90,6 +109,7 @@ class StatisticsView(QWidget):
         layout.addLayout(select_plot_layout)
         layout.addLayout(select_values_layout)
 
+
 class TableWork(QWidget):
     def __init__(self):
         super().__init__()
@@ -117,6 +137,7 @@ class TableWork(QWidget):
         layout.addLayout(btns_layout2)
         layout.addLayout(btns_layout)
         layout.addWidget(table)
+
 
 class MainApplication(QMainWindow):
     def __init__(self):
@@ -221,6 +242,7 @@ class AppController:
         self.login_window.login_btn.clicked.connect(self.show_main_window)
 
         self.login_window.show()
+
         sys.exit(self.app.exec())
 
     def show_main_window(self):

@@ -14,9 +14,12 @@ import Lyc_PyQt.app_ui
 
 import Lyc_PyQt.db_connection
 
+
 class DB_cl:
     def __init__(self):
+        print('hello')
         self.connect_to_db()
+        print('bue')
 
     def connect_to_db(self):
         self.conn = Lyc_PyQt.db_connection.connect_to_db()

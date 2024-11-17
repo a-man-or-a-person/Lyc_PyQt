@@ -10,7 +10,7 @@ load_dotenv()
 if os.getenv('DEV_MODE') == 'True':
     path = 'user_data.db'
 else:
-    path = pathlib.Path('DataBase/user_data.db').resolve()
+    # path = pathlib.Path('DataBase/user_data.db').resolve()
 
 
 def db_conn_wrap(func, db=path):

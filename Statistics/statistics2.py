@@ -3,6 +3,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import os
+from dotenv import load_dotenv
 
 import PyQt6.QtWidgets
 
@@ -36,7 +38,6 @@ class StatisticsWindow(Lyc_PyQt.UI.statistics_ui.MainWindow):
         self.figure = plt.figure(figsize=(6, 15))
         self.canvas = MplCanvas(parent=self, width=5, height=4, dpi=100)
         self.main_layout.addWidget(self.canvas)
-        # self.plot()
 
 
     @db_conn_wrap
