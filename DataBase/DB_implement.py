@@ -1,67 +1,53 @@
 import sys
+import os
 
 import PyQt6.QtWidgets
 
-import Lyc_PyQt.UI.work_with_data_ui
-from Lyc_PyQt.decorators import db_conn_wrap
-import Lyc_PyQt.UI.main_menu_ui
+
 import Lyc_PyQt.DataBase.work_with_csv
+import Lyc_PyQt.db_connection
+import Lyc_PyQt.UI.Tabel_work_ui
+
+from dotenv import load_dotenv
 
 
-class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
+class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
     def __init__(self):
         super().__init__()
         self.refresh_btn.clicked.connect(self.combo_box)
         self.select_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        self.add_exel_file_btn.clicked.connect(self.add_exel_file)
+        self.conn = Lyc_PyQt.db_connection.connect_db()
+        self.cur = self.conn.cursor()
         self.combo_box()
 
-    @db_conn_wrap
     def combo_box(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            PyQt6.QtWidgets.QMessageBox.critical(
-                self, "DB_conn_error", "DB was not provided or couldn't connect"
-            )
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS csv_files (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT UNIQUE
-                )"""
-        )
+        load_dotenv()
+        conn = self.conn
+        cursor = self.cur
         self.files_combo_box.clear()
-        tables = cursor.execute("SELECT * FROM csv_files").fetchall()
+        user_id = os.environ.get("USER")
+        cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
+        tables = cursor.fetchall()
         if tables:
-            self.files_combo_box.addItems([x[1] for x in tables])
+            self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
-
-    def add_exel_file(self):
-        self.add_exel_window = Lyc_PyQt.DataBase.work_with_csv.CsvLayout()
-        self.add_exel_window.show()
-
-    @db_conn_wrap
     def get_column_names(self, table="test_data", **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            raise ValueError("No connection to db had been provided")
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
-
+        conn = self.conn
+        cursor = self.cur
         a = "SELECT * FROM {0} LIMIT 1".format(table)
-        res = [x[0] for x in cursor.execute(a).description]
+        cursor.execute(a)
+        res = [x[0] for x in cursor.description]
+        cursor.fetchall()
         return res
 
-    @db_conn_wrap
     def get_all_items(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            raise ValueError("No connection to db had been provided")
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
-
+        conn = self.conn
+        cursor = self.cur
         table = self.files_combo_box.currentText()
         a = f"SELECT * FROM {table}"
-        data = cursor.execute(a).fetchall()
+        cursor.execute(a)
+        data = cursor.fetchall()
         self.table.setRowCount(0)
         if data:
             self.table.setColumnCount(len(data[0]))
@@ -73,16 +59,11 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
                         row, pos, PyQt6.QtWidgets.QTableWidgetItem(str(info))
                     )
 
-    @db_conn_wrap
     def delete(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            raise ValueError("No connection to db had been provided")
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
+        conn = self.conn
+        cursor = self.cur
 
         table = self.files_combo_box.currentText()
-        if "table" in kwargs:
-            table = kwargs["table"]
 
         selected = self.table.currentRow()
         if selected == -1:
@@ -90,8 +71,8 @@ class Table_work(Lyc_PyQt.UI.work_with_data_ui.TableWork):
             return None
 
         selected_id = self.table.item(selected, 0).text()
-        request = f"DELETE FROM {table} WHERE id = ?"
-        cursor.execute(request, [selected_id])
+        request = f"DELETE FROM {table} WHERE id = '{selected_id}'"
+        cursor.execute(request)
         conn.commit()
         self.get_all_items()
 

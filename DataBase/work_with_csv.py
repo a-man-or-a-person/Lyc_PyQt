@@ -1,127 +1,123 @@
-import sqlite3
 import sys
 import pandas as pd
+import mysql.connector
 
-import PyQt6.QtWidgets
+from dotenv import load_dotenv
+import os
 
-import Lyc_PyQt.UI.csv_input_ui
-from Lyc_PyQt.decorators import db_conn_wrap
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QStackedWidget,
+    QApplication,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QMessageBox,
+    QFileDialog,
+    QTableWidget,
+    QTableWidgetItem,
+)
+import Lyc_PyQt.UI.csv_ui
+import Lyc_PyQt.db_connection
 
 
-class CsvLayout(Lyc_PyQt.UI.csv_input_ui.CsvViews):
+class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
     def __init__(self):
         super().__init__()
-        self.display_all_files()
+        self.connection = Lyc_PyQt.db_connection.connect_db()
+        self.cur = self.connection.cursor()
         self.refresh_btn.clicked.connect(self.display_all_files)
         self.add_csv_btn.clicked.connect(self.add_csv)
         self.del_csv_btn.clicked.connect(self.delete)
 
-    @db_conn_wrap
     def display_all_files(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            raise ValueError("No connection to db had been provided")
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
-
+        cursor = self.cur
+        load_dotenv()
+        user_id = os.getenv("USER")
         cursor.execute(
-            """CREATE TABLE IF NOT EXISTS csv_files (
-            id INTEGER PRIMARY KEY,
-            name TEXT UNIQUE
-        )"""
+            f"SELECT tableid, table_name FROM tables WHERE userid='{user_id}'"
         )
-        data = cursor.execute("SELECT * FROM csv_files").fetchall()
+        data = cursor.fetchall()
         self.table.setRowCount(0)
         self.table.setColumnCount(2)
-        self.table.setHorizontalHeaderLabels(["id", "filename"])
+        self.table.setHorizontalHeaderLabels(["table_id", "filename"])
         if data:
             for row, line in enumerate(data):
                 self.table.insertRow(row)
                 for pos, info in enumerate(line):
-                    self.table.setItem(
-                        row, pos, PyQt6.QtWidgets.QTableWidgetItem(str(info))
-                    )
+                    self.table.setItem(row, pos, QTableWidgetItem(str(info)))
         else:
             self.table.insertRow(0)
             for pos, info in enumerate(["no", "files"]):
-                self.table.setItem(0, pos, PyQt6.QtWidgets.QTableWidgetItem(str(info)))
+                self.table.setItem(0, pos, QTableWidgetItem(str(info)))
 
-    @db_conn_wrap
     def delete(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            raise ValueError("No connection to db had been provided")
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
+        cursor = self.cur
 
         selected = self.table.currentRow()
         if selected == -1:
-            PyQt6.QtWidgets.QMessageBox.warning(self, "Warning", "No row chosen")
+            QMessageBox.warning(self, "Warning", "No row chosen")
             return None
 
         selected_id = self.table.item(selected, 0).text()
         selected_name = self.table.item(selected, 1).text()
         if not selected_id.isdigit():
-            PyQt6.QtWidgets.QMessageBox.warning(
-                self, "Warning", "You can`t delete this"
-            )
+            QMessageBox.warning(self, "Warning", "You can`t delete this")
             return None
-        cursor.execute("DELETE FROM csv_files WHERE name=?", [selected_name])
-        cursor.execute(f"DROP TABLE {selected_name}")
-        conn.commit()
+        load_dotenv()
+        user_id = os.getenv("USER")
+        cursor.execute("DELETE FROM tables WHERE tableid=%s", (selected_id,))
+        cursor.execute(f"DROP TABLE `{selected_name}`")
+        self.connection.commit()
         self.display_all_files()
 
-    @db_conn_wrap
     def add_csv(self, *args, **kwargs):
-        if not ("conn" in kwargs or "cursor" in kwargs):
-            PyQt6.QtWidgets.QMessageBox.critical(
-                self, "DB_conn_error", "DB was not provided or couldn't connect"
-            )
-        conn = kwargs["conn"]
-        cursor = kwargs["cursor"]
+        cursor = self.cur
 
-        PyQt6.QtWidgets.QMessageBox.warning(
-            self, "Warning", "File should contain headers"
-        )
-        path = PyQt6.QtWidgets.QFileDialog.getOpenFileName(self, "Select file", 'C:/',
-                                                           'Exel (*.xlsx, *xls, *csv);; Все файлы (*)')[0]
+        QMessageBox.warning(self, "Warning", "File should contain headers")
+        path = QFileDialog.getOpenFileName(
+            self, "Select file", "C:/"
+        )[0]
         if not path:
-            PyQt6.QtWidgets.QMessageBox.critical(
-                self, "File selection error", "No file was selected"
-            )
+            QMessageBox.critical(self, "File selection error", "No file was selected")
             return None
-        print(path)
         if "/" in path:
             name = path.split("/")[-1]
         else:
             name = path.split("\\")[-1]
-        name = "_".join(name.split()).split(".")[0]
+        load_dotenv()
+        user_id = os.getenv("USER")
+        name = f'{user_id}_{"_".join(name.split()).split(".")[0]}'
+
         try:
-            exel_file = pd.ExcelFile(path)
-            sheet1 = exel_file.parse(0)
+            excel_file = pd.ExcelFile(path)
+            sheet1 = excel_file.parse(0)
         except ValueError:
-            if path.split('.')[-1] == 'csv':
+            if path.split(".")[-1] == "csv":
                 sheet1 = pd.read_csv(path)
             else:
-                PyQt6.QtWidgets.QMessageBox.critical(
-                    self, "File decoding error", "Wrong file type"
-                )
+                QMessageBox.critical(self, "File decoding error", "Wrong file type")
                 return
 
         columns = list(sheet1.columns)
-        db_request = f"CREATE TABLE {name} ( id INTEGER PRIMARY KEY,"
+        db_request = f"CREATE TABLE `{name}` ( id INT PRIMARY KEY AUTO_INCREMENT,"
         for i in columns[:-1]:
             db_request += f"{i} TEXT, "
         db_request += f"{columns[-1]} TEXT)"
         try:
             cursor.execute(db_request)
-        except sqlite3.OperationalError:
-            PyQt6.QtWidgets.QMessageBox.critical(
-                self, "Table creation failed", "Table already exists"
+        except mysql.connector.Error as err:
+            QMessageBox.critical(
+                self, "Table creation failed", f"Table already exists or error: {err}"
             )
             return None
-        db_request = f"""INSERT INTO {name} ({', '.join(columns)}) VALUES ({', '.join(['?' for _ in range(len(columns))])})"""
-        cursor.executemany(db_request, sheet1.values)
-        cursor.execute(f"INSERT INTO csv_files (name) VALUES (?)", [name])
-        conn.commit()
+        db_request = f"""INSERT INTO `{name}` ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in range(len(columns))])})"""
+        cursor.executemany(db_request, sheet1.values.tolist())
+        cursor.execute(
+            "INSERT INTO tables (userid, table_name) VALUES (%s, %s)", (user_id, name)
+        )
+        self.connection.commit()
         self.display_all_files()
 
 
@@ -130,8 +126,8 @@ def except_hook(cls, exception, traceback):
 
 
 if __name__ == "__main__":
-    app = PyQt6.QtWidgets.QApplication(sys.argv)
-    window = CsvLayout()
+    app = QApplication(sys.argv)
+    main_window = CsvLayout()
     sys.excepthook = except_hook
-    window.show()
+    main_window.show()
     sys.exit(app.exec())
