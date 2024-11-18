@@ -1,7 +1,9 @@
-
 import sys
 import pandas as pd
 import mysql.connector
+
+from dotenv import load_dotenv
+import os
 
 from PyQt6.QtWidgets import (
     QMainWindow,
@@ -20,7 +22,6 @@ import Lyc_PyQt.UI.csv_ui
 import Lyc_PyQt.db_connection
 
 
-
 class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
     def __init__(self):
         super().__init__()
@@ -32,11 +33,15 @@ class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
 
     def display_all_files(self, *args, **kwargs):
         cursor = self.cur
-        cursor.execute("SELECT * FROM LicPyqt.csv_files")
+        load_dotenv()
+        user_id = os.getenv("USER")
+        cursor.execute(
+            f"SELECT tableid, table_name FROM tables WHERE userid='{user_id}'"
+        )
         data = cursor.fetchall()
         self.table.setRowCount(0)
         self.table.setColumnCount(2)
-        self.table.setHorizontalHeaderLabels(["id", "filename"])
+        self.table.setHorizontalHeaderLabels(["table_id", "filename"])
         if data:
             for row, line in enumerate(data):
                 self.table.insertRow(row)
@@ -60,8 +65,10 @@ class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
         if not selected_id.isdigit():
             QMessageBox.warning(self, "Warning", "You can`t delete this")
             return None
-        cursor.execute("DELETE FROM LicPyqt.csv_files WHERE name=%s", (selected_name,))
-        cursor.execute(f"DROP TABLE `{selected_name}`")
+        load_dotenv()
+        user_id = os.getenv("USER")
+        cursor.execute("DELETE FROM tables WHERE tableid=%s", (selected_id,))
+        cursor.execute(f"DROP TABLE `{user_id}_{selected_name}`")
         self.connection.commit()
         self.display_all_files()
 
@@ -75,12 +82,14 @@ class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
         if not path:
             QMessageBox.critical(self, "File selection error", "No file was selected")
             return None
-        print(path)
         if "/" in path:
             name = path.split("/")[-1]
         else:
             name = path.split("\\")[-1]
-        name = "_".join(name.split()).split(".")[0]
+        load_dotenv()
+        user_id = os.getenv("USER")
+        name = f'{user_id}_{"_".join(name.split()).split(".")[0]}'
+
         try:
             excel_file = pd.ExcelFile(path)
             sheet1 = excel_file.parse(0)
@@ -105,7 +114,9 @@ class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
             return None
         db_request = f"""INSERT INTO `{name}` ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in range(len(columns))])})"""
         cursor.executemany(db_request, sheet1.values.tolist())
-        cursor.execute("INSERT INTO csv_files (name) VALUES (%s)", (name,))
+        cursor.execute(
+            "INSERT INTO tables (userid, table_name) VALUES (%s, %s)", (user_id, name)
+        )
         self.connection.commit()
         self.display_all_files()
 

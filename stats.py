@@ -1,8 +1,11 @@
 import sys
+import os
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from dotenv import load_dotenv
+
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -30,6 +33,7 @@ class MplCanvas(FigureCanvas):
         fig = plt.figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super().__init__(fig)
+
 
 class StatisticsWindow(StatisticsView):
     def __init__(self):
@@ -61,14 +65,6 @@ class StatisticsWindow(StatisticsView):
         for val, col in zip(vals, cols):
             self.label_box.addItem(col)
             self.value_box.addItem(col)
-            # Values can also be integers ----------- !!!!!!!!!!!!!!!!!!!!
-            # try:
-            #     float(val)
-            #     self.value_box.addItem(col)
-            # except ValueError:
-            #     self.label_box.addItem(col)
-            # except TypeError:
-            #     pass
 
     def update_graph(self, *args, **kwargs):
         conn = self.conn
@@ -99,10 +95,12 @@ class StatisticsWindow(StatisticsView):
         conn = self.conn
         cursor = self.cur
         self.files_combo_box.clear()
-        cursor.execute("SELECT * FROM csv_files")
+        load_dotenv()
+        user_id = os.getenv("USER")
+        cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
         tables = cursor.fetchall()
         if tables:
-            self.files_combo_box.addItems([x[1] for x in tables])
+            self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
 
 

@@ -1,4 +1,5 @@
 import sys
+import os
 
 import PyQt6.QtWidgets
 
@@ -6,6 +7,8 @@ import PyQt6.QtWidgets
 import Lyc_PyQt.DataBase.work_with_csv
 import Lyc_PyQt.db_connection
 import Lyc_PyQt.UI.Tabel_work_ui
+
+from dotenv import load_dotenv
 
 
 class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
@@ -20,14 +23,15 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
         self.combo_box()
 
     def combo_box(self, *args, **kwargs):
+        load_dotenv()
         conn = self.conn
         cursor = self.cur
-        print('start')
         self.files_combo_box.clear()
-        cursor.execute("SELECT * FROM csv_files")
+        user_id = os.environ.get("USER")
+        cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
         tables = cursor.fetchall()
         if tables:
-            self.files_combo_box.addItems([x[1] for x in tables])
+            self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
 
     def add_exel_file(self):

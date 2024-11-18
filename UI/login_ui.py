@@ -19,19 +19,9 @@ class LoginWindow(QT.QWidget):
         self.password_input.setEchoMode(QT.QLineEdit.EchoMode.Password)
 
         self.login_btn = QT.QPushButton("Login")
-        self.login_btn.clicked.connect(self.check_login)
 
         layout.addWidget(self.username_label)
         layout.addWidget(self.username_input)
         layout.addWidget(self.password_label)
         layout.addWidget(self.password_input)
         layout.addWidget(self.login_btn)
-
-    def check_login(self):
-        username = self.username_input.text()
-        password = self.password_input.text()
-        if username == "admin" and password == "password":
-            self.accepted_login.emit()
-        else:
-            self.username_input.clear()
-            self.password_input.clear()

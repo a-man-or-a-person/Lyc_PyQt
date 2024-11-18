@@ -1,7 +1,11 @@
+import os
+
 import Lyc_PyQt.DataBase.work_with_csv
 import Lyc_PyQt.DataBase.DB_implement
 import Lyc_PyQt.UI.home_ui
 import Lyc_PyQt.stats
+import Lyc_PyQt.login
+
 import PyQt6.QtWidgets as QT
 import sys
 from PyQt6.QtWidgets import (
@@ -98,40 +102,9 @@ class MainApplication(QT.QMainWindow):
         self.stacked_widget.setCurrentWidget(self.table_view)
 
 
-class LoginWindow(QWidget):
+class LoginWindow(Lyc_PyQt.login.Login):
     def __init__(self):
         super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Login")
-        self.setGeometry(100, 100, 400, 200)
-
-        layout = QVBoxLayout(self)
-
-        self.username_label = QLabel("Username:")
-        self.username_input = QLineEdit()
-        self.password_label = QLabel("Password:")
-        self.password_input = QLineEdit()
-        self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-
-        self.login_btn = QPushButton("Login")
-        self.login_btn.clicked.connect(self.check_login)
-
-        layout.addWidget(self.username_label)
-        layout.addWidget(self.username_input)
-        layout.addWidget(self.password_label)
-        layout.addWidget(self.password_input)
-        layout.addWidget(self.login_btn)
-
-    def check_login(self):
-        username = self.username_input.text()
-        password = self.password_input.text()
-        if username == "admin" and password == "password":
-            self.accepted_login.emit()
-        else:
-            self.username_input.clear()
-            self.password_input.clear()
 
 
 def except_hook(cls, exception, traceback):
@@ -144,10 +117,8 @@ sys.excepthook = except_hook
 class AppController:
     def __init__(self):
         self.app = QApplication(sys.argv)
-        self.login_window = LoginWindow()
+        self.login_window = Lyc_PyQt.login.Login(self)
         self.main_window = MainApplication()
-
-        self.login_window.login_btn.clicked.connect(self.show_main_window)
 
         self.login_window.show()
 
@@ -156,6 +127,7 @@ class AppController:
     def show_main_window(self):
         self.login_window.close()
         self.main_window.show()
+        print(os.getenv("USER"))
 
 
 if __name__ == "__main__":
