@@ -1,5 +1,9 @@
+import Lyc_PyQt.DataBase.work_with_csv
+import Lyc_PyQt.DataBase.DB_implement
+import Lyc_PyQt.UI.home_ui
+import Lyc_PyQt.stats
+import PyQt6.QtWidgets as QT
 import sys
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -11,114 +15,32 @@ from PyQt6.QtWidgets import (
     QLabel,
     QComboBox,
     QTableWidget,
-    QLineEdit
+    QLineEdit,
+    QMessageBox,
 )
 
 
-class HomeView(QWidget):
+class HomeView(Lyc_PyQt.UI.home_ui.HomeView):
     def __init__(self):
         super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("Money and Statistics")
-        layout = QVBoxLayout(self)
-
-        header_text = QLabel("<h1>Welcome to Money & Statistics</h1>")
-        header_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sub_text = QLabel("<h3>Your tool for financial insights and data analysis</h3>")
-        sub_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        layout.addStretch()
-        layout.addWidget(header_text)
-        layout.addWidget(sub_text)
-        layout.addStretch()
 
 
-class CsvViews(QWidget):
+class CsvViews(Lyc_PyQt.DataBase.work_with_csv.CsvLayout):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def initUI(self):
-        self.setWindowTitle("Adding Exel_file")
-        layout = QVBoxLayout(self)
-        btn_layout1 = QHBoxLayout()
-        btn_layout2 = QHBoxLayout()
-        refresh_btn = QPushButton(parent=self, text="Refresh")
-        add_csv_btn = QPushButton(parent=self, text="Add Exel(XLS) File")
-        del_csv_btn = QPushButton(parent=self, text="Delete File")
-        empty_btn = QPushButton(parent=self, text="Empty")
-        table = QTableWidget(self)
-        btn_layout1.addWidget(refresh_btn)
-        btn_layout1.addWidget(empty_btn)
-        btn_layout2.addWidget(add_csv_btn)
-        btn_layout2.addWidget(del_csv_btn)
-        layout.addLayout(btn_layout1)
-        layout.addLayout(btn_layout2)
-        layout.addWidget(table)
 
-class StatisticsView(QWidget):
+class TableWork(Lyc_PyQt.DataBase.DB_implement.Table_work):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def initUI(self):
-        layout = QVBoxLayout(self)
-        select_file_layout = QHBoxLayout()
-        select_values_layout = QHBoxLayout()
-        select_plot_layout = QHBoxLayout()
-        files_combo_box = QComboBox(self)
-        refresh_btn = QPushButton(parent=self, text="Refresh")
-        graphs_box = QComboBox(self)
-        plot_btn = QPushButton(parent=self, text="Plot")
-        label_box = QComboBox(self)
-        value_box = QComboBox(self)
-        refresh_boxes_btn = QPushButton(parent=self, text="Refresh boxes")
-        select_file_layout.addWidget(QLabel("Select file:"))
-        select_file_layout.addWidget(files_combo_box)
-        select_file_layout.addWidget(refresh_btn)
-        select_plot_layout.addWidget(QLabel("Select graph:"))
-        select_plot_layout.addWidget(graphs_box)
-        select_plot_layout.addWidget(plot_btn)
-        select_values_layout.addWidget(QLabel("Select value:"))
-        select_values_layout.addWidget(value_box)
-        select_values_layout.addWidget(QLabel("Select labels:"))
-        select_values_layout.addWidget(label_box)
-        select_values_layout.addWidget(refresh_boxes_btn)
-        layout.addLayout(select_file_layout)
-        layout.addLayout(select_plot_layout)
-        layout.addLayout(select_values_layout)
 
-class TableWork(QWidget):
+class StatisticsView(Lyc_PyQt.stats.StatisticsWindow):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def initUI(self):
-        self.setWindowTitle("Work With Selected File")
-        layout = QVBoxLayout(self)
-        select_file_layout = QHBoxLayout()
-        btns_layout = QHBoxLayout(self)
-        btns_layout2 = QHBoxLayout(self)
-        files_combo_box = QComboBox(self)
-        refresh_btn = QPushButton(parent=self, text="Refresh")
-        delete_btn = QPushButton(parent=self, text="Delete")
-        add_exel_file_btn = QPushButton(parent=self, text="Add exel file")
-        select_btn = QPushButton(parent=self, text="Select")
-        table = QTableWidget(self)
-        select_file_layout.addWidget(QLabel("Select file:"))
-        select_file_layout.addWidget(files_combo_box)
-        select_file_layout.addWidget(refresh_btn)
-        btns_layout2.addWidget(select_btn)
-        btns_layout2.addWidget(add_exel_file_btn)
-        btns_layout.addWidget(delete_btn)
-        layout.addLayout(select_file_layout)
-        layout.addLayout(btns_layout2)
-        layout.addLayout(btns_layout)
-        layout.addWidget(table)
 
-class MainApplication(QMainWindow):
+class MainApplication(QT.QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -212,6 +134,13 @@ class LoginWindow(QWidget):
             self.password_input.clear()
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
+sys.excepthook = except_hook
+
+
 class AppController:
     def __init__(self):
         self.app = QApplication(sys.argv)
@@ -221,6 +150,7 @@ class AppController:
         self.login_window.login_btn.clicked.connect(self.show_main_window)
 
         self.login_window.show()
+
         sys.exit(self.app.exec())
 
     def show_main_window(self):
