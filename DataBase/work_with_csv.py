@@ -68,7 +68,7 @@ class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
         load_dotenv()
         user_id = os.getenv("USER")
         cursor.execute("DELETE FROM tables WHERE tableid=%s", (selected_id,))
-        cursor.execute(f"DROP TABLE `{user_id}_{selected_name}`")
+        cursor.execute(f"DROP TABLE `{selected_name}`")
         self.connection.commit()
         self.display_all_files()
 

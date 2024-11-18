@@ -17,7 +17,6 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
         self.refresh_btn.clicked.connect(self.combo_box)
         self.select_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        self.add_exel_file_btn.clicked.connect(self.add_exel_file)
         self.conn = Lyc_PyQt.db_connection.connect_db()
         self.cur = self.conn.cursor()
         self.combo_box()
@@ -33,11 +32,6 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
-
-    def add_exel_file(self):
-        self.add_exel_window = Lyc_PyQt.DataBase.work_with_csv.CsvLayout()
-        self.add_exel_window.show()
-
     def get_column_names(self, table="test_data", **kwargs):
         conn = self.conn
         cursor = self.cur
