@@ -5,7 +5,7 @@ import PyQt6.QtWidgets
 
 
 import Lyc_PyQt.DataBase.work_with_csv
-import Lyc_PyQt.db_connection
+from Lyc_PyQt.db_connection import db_conn_wrap
 import Lyc_PyQt.UI.Tabel_work_ui
 
 from dotenv import load_dotenv
@@ -17,35 +17,57 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
         self.refresh_btn.clicked.connect(self.combo_box)
         self.select_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        self.conn = Lyc_PyQt.db_connection.connect_db()
-        self.cur = self.conn.cursor()
+        # self.conn = Lyc_PyQt.db_connection.connect_db()
+        # self.cur = self.conn.cursor()
         self.combo_box()
 
+    @db_conn_wrap
     def combo_box(self, *args, **kwargs):
+        print('hello')
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         load_dotenv()
-        conn = self.conn
-        cursor = self.cur
+        # conn = self.conn
+        # cursor = self.cur
         self.files_combo_box.clear()
         user_id = os.environ.get("USER")
+
         cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
         tables = cursor.fetchall()
+        print(tables)
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
-    def get_column_names(self, table="test_data", **kwargs):
-        conn = self.conn
-        cursor = self.cur
+
+    @db_conn_wrap
+    def get_column_names(self, *args, **kwargs):
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
+        table = "tables"
         a = "SELECT * FROM {0} LIMIT 1".format(table)
         cursor.execute(a)
         res = [x[0] for x in cursor.description]
         cursor.fetchall()
         return res
 
+    @db_conn_wrap
     def get_all_items(self, *args, **kwargs):
-        conn = self.conn
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         table = self.files_combo_box.currentText()
-        a = f"SELECT * FROM {table}"
+        a = f"SELECT * FROM '{table}'"
         cursor.execute(a)
         data = cursor.fetchall()
         self.table.setRowCount(0)
@@ -59,9 +81,14 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
                         row, pos, PyQt6.QtWidgets.QTableWidgetItem(str(info))
                     )
 
+    @db_conn_wrap
     def delete(self, *args, **kwargs):
-        conn = self.conn
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         table = self.files_combo_box.currentText()
 
