@@ -127,7 +127,6 @@ class AppController:
     def show_main_window(self):
         self.login_window.close()
         self.main_window.show()
-        print(os.getenv("USER"))
 
 
 if __name__ == "__main__":
