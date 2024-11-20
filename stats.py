@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from dotenv import load_dotenv
-
+import PyQt6.QtWidgets
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-import db_connection
+from db_connection import db_conn_wrap
 from UI.statisics_ui import StatisticsView
 
 matplotlib.use("QtAgg")
@@ -44,36 +44,46 @@ class StatisticsWindow(StatisticsView):
         self.plot_btn.clicked.connect(self.update_graph)
         self.refresh_boxes_btn.clicked.connect(self.refresh_boxes)
 
-        self.conn = db_connection.connect_db()
-        self.cur = self.conn.cursor()
+        # self.conn = db_connection.connect_db()
+        # self.cur = self.conn.cursor()
 
         # Add canvas for plotting
         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
         self.layout.addWidget(self.canvas)
 
+    @db_conn_wrap
     def refresh_boxes(self, *args, **kwargs):
-        conn = self.conn
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         self.value_box.clear()
         self.label_box.clear()
 
         selected_table = self.files_combo_box.currentText()
-        df = pd.read_sql_query(f"SELECT * FROM {selected_table}", conn)
+        df = pd.read_sql_query(f"SELECT * FROM '{selected_table}'", conn)
         cols = df.columns
         vals = df.iloc[0]
         for val, col in zip(vals, cols):
             self.label_box.addItem(col)
             self.value_box.addItem(col)
 
+    @db_conn_wrap
     def update_graph(self, *args, **kwargs):
-        conn = self.conn
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         self.canvas.axes.cla()
 
         selected_table = self.files_combo_box.currentText()
-        df = pd.read_sql_query(f"SELECT * FROM {selected_table}", conn)
+        df = pd.read_sql_query(f"SELECT * FROM '{selected_table}'", conn)
 
         value = self.value_box.currentText()
         label = self.label_box.currentText()
@@ -91,9 +101,14 @@ class StatisticsWindow(StatisticsView):
             return
         self.canvas.draw()
 
+    @db_conn_wrap
     def combo_box(self, *args, **kwargs):
-        conn = self.conn
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         self.files_combo_box.clear()
         load_dotenv()
         user_id = os.getenv("USER")

@@ -1,9 +1,9 @@
 import os
 import UI.login_ui
-import db_connection
+from db_connection import db_conn_wrap
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-
+import PyQt6.QtWidgets
 
 class CreateAccountDialog(UI.login_ui.CreateAccountDialog):
     def __init__(self):
@@ -34,28 +34,42 @@ class CreateAccountDialog(UI.login_ui.CreateAccountDialog):
 class Login(UI.login_ui.LoginWindow):
     def __init__(self, parent):
         super().__init__()
-        self.conn = db_connection.connect_db()
-        self.cur = self.conn.cursor()
+        # self.conn = db_connection.connect_db()
+        # cursor = self.conn.cursor()
         self.parent = parent
         self.login_btn.clicked.connect(self.check_login)
         self.account_create_btn.clicked.connect(self.create_account)
 
-    def create_account(self):
+    @db_conn_wrap
+    def create_account(self, *args, **kwargs):
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         dialog = CreateAccountDialog()
         if dialog.exec() == QDialog.DialogCode.Accepted:
             username, password = dialog.get_credentials()
-            self.cur.execute("INSERT INTO Users (username, password) VALUES (%s, %s)", (username, password))
-            self.conn.commit()
+            cursor.execute("INSERT INTO Users (username, password) VALUES (?, ?)", (username, password))
+            conn.commit()
             QMessageBox.information(self, "Success", "Account created successfully!")
 
-    def check_login(self):
+    @db_conn_wrap
+    def check_login(self, *args, **kwargs):
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         username = self.username_input.text()
         password = self.password_input.text()
-        self.cur.execute(f"SELECT password FROM Users WHERE username = '{username}'")
-        pas = self.cur.fetchone()[0]
+        cursor.execute(f"SELECT password FROM Users WHERE username = '{username}'")
+        pas = cursor.fetchone()[0]
         if pas and password == pas:
-            self.cur.execute(f'SELECT userid FROM Users WHERE username = "{username}"')
-            os.environ["USER"] = str(self.cur.fetchone()[0])
+            cursor.execute(f'SELECT userid FROM Users WHERE username = "{username}"')
+            os.environ["USER"] = str(cursor.fetchone()[0])
             self.parent.show_main_window()
         else:
             self.username_input.clear()

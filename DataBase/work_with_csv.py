@@ -4,6 +4,7 @@ import mysql.connector
 
 from dotenv import load_dotenv
 import os
+import PyQt6.QtWidgets
 
 from PyQt6.QtWidgets import (
     QMainWindow,
@@ -19,20 +20,26 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
 )
 import UI.csv_ui
-import db_connection
+from db_connection import db_conn_wrap
 
 
 class CsvLayout(UI.csv_ui.CsvViews):
     def __init__(self):
         super().__init__()
-        self.connection = db_connection.connect_db()
-        self.cur = self.connection.cursor()
+        # self.connection = db_connection.connect_db()
+        # self.cur = self.connection.cursor()
         self.refresh_btn.clicked.connect(self.display_all_files)
         self.add_csv_btn.clicked.connect(self.add_csv)
         self.del_csv_btn.clicked.connect(self.delete)
 
+    @db_conn_wrap
     def display_all_files(self, *args, **kwargs):
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         load_dotenv()
         user_id = os.getenv("USER")
         cursor.execute(
@@ -52,8 +59,14 @@ class CsvLayout(UI.csv_ui.CsvViews):
             for pos, info in enumerate(["no", "files"]):
                 self.table.setItem(0, pos, QTableWidgetItem(str(info)))
 
+    @db_conn_wrap
     def delete(self, *args, **kwargs):
-        cursor = self.cur
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
 
         selected = self.table.currentRow()
         if selected == -1:
@@ -69,12 +82,17 @@ class CsvLayout(UI.csv_ui.CsvViews):
         user_id = os.getenv("USER")
         cursor.execute("DELETE FROM tables WHERE tableid=%s", (selected_id,))
         cursor.execute(f"DROP TABLE `{selected_name}`")
-        self.connection.commit()
+        conn.commit()
         self.display_all_files()
 
+    @db_conn_wrap
     def add_csv(self, *args, **kwargs):
-        cursor = self.cur
-
+        if not ("conn" in kwargs or "cursor" in kwargs):
+            PyQt6.QtWidgets.QMessageBox.critical(
+                self, "DB_conn_error", "DB was not provided or couldn't connect"
+            )
+        conn = kwargs["conn"]
+        cursor = kwargs["cursor"]
         QMessageBox.warning(self, "Warning", "File should contain headers")
         path = QFileDialog.getOpenFileName(
             self, "Select file", "C:/"
@@ -101,7 +119,7 @@ class CsvLayout(UI.csv_ui.CsvViews):
                 return
 
         columns = list(sheet1.columns)
-        db_request = f"CREATE TABLE `{name}` ( id INT PRIMARY KEY AUTO_INCREMENT,"
+        db_request = f"CREATE TABLE `{name}` ( id INTEGER PRIMARY KEY AUTOINCREMENT,"
         for i in columns[:-1]:
             db_request += f"{i} TEXT, "
         db_request += f"{columns[-1]} TEXT)"
@@ -112,12 +130,12 @@ class CsvLayout(UI.csv_ui.CsvViews):
                 self, "Table creation failed", f"Table already exists or error: {err}"
             )
             return None
-        db_request = f"""INSERT INTO `{name}` ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in range(len(columns))])})"""
+        db_request = f"""INSERT INTO `{name}` ({', '.join(columns)}) VALUES ({', '.join(['?' for _ in range(len(columns))])})"""
         cursor.executemany(db_request, sheet1.values.tolist())
         cursor.execute(
-            "INSERT INTO tables (userid, table_name) VALUES (%s, %s)", (user_id, name)
+            "INSERT INTO tables (userid, table_name) VALUES (?, ?)", (user_id, name)
         )
-        self.connection.commit()
+        conn.commit()
         self.display_all_files()
 
 
