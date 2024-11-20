@@ -18,14 +18,14 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
 )
-import Lyc_PyQt.UI.csv_ui
-import Lyc_PyQt.db_connection
+import UI.csv_ui
+import db_connection
 
 
-class CsvLayout(Lyc_PyQt.UI.csv_ui.CsvViews):
+class CsvLayout(UI.csv_ui.CsvViews):
     def __init__(self):
         super().__init__()
-        self.connection = Lyc_PyQt.db_connection.connect_db()
+        self.connection = db_connection.connect_db()
         self.cur = self.connection.cursor()
         self.refresh_btn.clicked.connect(self.display_all_files)
         self.add_csv_btn.clicked.connect(self.add_csv)

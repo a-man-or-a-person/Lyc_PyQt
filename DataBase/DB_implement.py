@@ -3,21 +3,19 @@ import os
 
 import PyQt6.QtWidgets
 
-
-import Lyc_PyQt.DataBase.work_with_csv
-import Lyc_PyQt.db_connection
-import Lyc_PyQt.UI.Tabel_work_ui
+import db_connection
+import UI.Tabel_work_ui
 
 from dotenv import load_dotenv
 
 
-class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
+class Table_work(UI.Tabel_work_ui.TableWork):
     def __init__(self):
         super().__init__()
         self.refresh_btn.clicked.connect(self.combo_box)
         self.select_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        self.conn = Lyc_PyQt.db_connection.connect_db()
+        self.conn = db_connection.connect_db()
         self.cur = self.conn.cursor()
         self.combo_box()
 
@@ -32,6 +30,7 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()
+
     def get_column_names(self, table="test_data", **kwargs):
         conn = self.conn
         cursor = self.cur

@@ -22,8 +22,8 @@ from PyQt6.QtWidgets import (
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-import Lyc_PyQt.db_connection
-from Lyc_PyQt.UI.statisics_ui import StatisticsView
+import db_connection
+from UI.statisics_ui import StatisticsView
 
 matplotlib.use("QtAgg")
 
@@ -44,7 +44,7 @@ class StatisticsWindow(StatisticsView):
         self.plot_btn.clicked.connect(self.update_graph)
         self.refresh_boxes_btn.clicked.connect(self.refresh_boxes)
 
-        self.conn = Lyc_PyQt.db_connection.connect_db()
+        self.conn = db_connection.connect_db()
         self.cur = self.conn.cursor()
 
         # Add canvas for plotting

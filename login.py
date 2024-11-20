@@ -1,11 +1,11 @@
 import os
-import Lyc_PyQt.UI.login_ui
-import Lyc_PyQt.db_connection
+import UI.login_ui
+import db_connection
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 
 
-class CreateAccountDialog(Lyc_PyQt.UI.login_ui.CreateAccountDialog):
+class CreateAccountDialog(UI.login_ui.CreateAccountDialog):
     def __init__(self):
         super().__init__()
         self.create_btn.clicked.connect(self.create_account)
@@ -31,10 +31,10 @@ class CreateAccountDialog(Lyc_PyQt.UI.login_ui.CreateAccountDialog):
         return self.username_input.text(), self.password_input.text()
 
 
-class Login(Lyc_PyQt.UI.login_ui.LoginWindow):
+class Login(UI.login_ui.LoginWindow):
     def __init__(self, parent):
         super().__init__()
-        self.conn = Lyc_PyQt.db_connection.connect_db()
+        self.conn = db_connection.connect_db()
         self.cur = self.conn.cursor()
         self.parent = parent
         self.login_btn.clicked.connect(self.check_login)
