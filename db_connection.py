@@ -19,10 +19,3 @@ def db_conn_wrap(func, db=path):
         return val
 
     return wrapper
-
-
-@db_conn_wrap
-def app(*args, **kwargs):
-    print(kwargs)
-
-app()

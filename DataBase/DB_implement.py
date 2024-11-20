@@ -4,26 +4,24 @@ import os
 import PyQt6.QtWidgets
 
 
-import Lyc_PyQt.DataBase.work_with_csv
-from Lyc_PyQt.db_connection import db_conn_wrap
-import Lyc_PyQt.UI.Tabel_work_ui
+from db_connection import db_conn_wrap
+import UI.Tabel_work_ui
 
 from dotenv import load_dotenv
 
 
-class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
+class Table_work(UI.Tabel_work_ui.TableWork):
     def __init__(self):
         super().__init__()
         self.refresh_btn.clicked.connect(self.combo_box)
         self.select_btn.clicked.connect(self.get_all_items)
         self.delete_btn.clicked.connect(self.delete)
-        # self.conn = Lyc_PyQt.db_connection.connect_db()
+        # self.conn = db_connection.connect_db()
         # self.cur = self.conn.cursor()
         self.combo_box()
 
     @db_conn_wrap
     def combo_box(self, *args, **kwargs):
-        print('hello')
         if not ("conn" in kwargs or "cursor" in kwargs):
             PyQt6.QtWidgets.QMessageBox.critical(
                 self, "DB_conn_error", "DB was not provided or couldn't connect"
@@ -38,7 +36,6 @@ class Table_work(Lyc_PyQt.UI.Tabel_work_ui.TableWork):
 
         cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
         tables = cursor.fetchall()
-        print(tables)
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])
         conn.commit()

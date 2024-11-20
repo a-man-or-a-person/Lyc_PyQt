@@ -1,10 +1,10 @@
 import os
 
-import Lyc_PyQt.DataBase.work_with_csv
-import Lyc_PyQt.DataBase.DB_implement
-import Lyc_PyQt.UI.home_ui
-import Lyc_PyQt.stats
-import Lyc_PyQt.login
+import DataBase.work_with_csv
+import DataBase.DB_implement
+import UI.home_ui
+import stats
+import login
 
 import PyQt6.QtWidgets as QT
 import sys
@@ -24,22 +24,22 @@ from PyQt6.QtWidgets import (
 )
 
 
-class HomeView(Lyc_PyQt.UI.home_ui.HomeView):
+class HomeView(UI.home_ui.HomeView):
     def __init__(self):
         super().__init__()
 
 
-class CsvViews(Lyc_PyQt.DataBase.work_with_csv.CsvLayout):
+class CsvViews(DataBase.work_with_csv.CsvLayout):
     def __init__(self):
         super().__init__()
 
 
-class TableWork(Lyc_PyQt.DataBase.DB_implement.Table_work):
+class TableWork(DataBase.DB_implement.Table_work):
     def __init__(self):
         super().__init__()
 
 
-class StatisticsView(Lyc_PyQt.stats.StatisticsWindow):
+class StatisticsView(stats.StatisticsWindow):
     def __init__(self):
         super().__init__()
 
@@ -102,7 +102,7 @@ class MainApplication(QT.QMainWindow):
         self.stacked_widget.setCurrentWidget(self.table_view)
 
 
-class LoginWindow(Lyc_PyQt.login.Login):
+class LoginWindow(login.Login):
     def __init__(self):
         super().__init__()
 
@@ -117,7 +117,7 @@ sys.excepthook = except_hook
 class AppController:
     def __init__(self):
         self.app = QApplication(sys.argv)
-        self.login_window = Lyc_PyQt.login.Login(self)
+        self.login_window = login.Login(self)
         self.main_window = MainApplication()
 
         self.login_window.show()
@@ -127,7 +127,6 @@ class AppController:
     def show_main_window(self):
         self.login_window.close()
         self.main_window.show()
-        print(os.getenv('USER'))
 
 
 
