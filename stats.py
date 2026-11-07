@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from db_connection import db_conn_wrap
+from db_connection import db_conn_wrap, user_table
 from UI.statisics_ui import StatisticsView
 
 matplotlib.use("QtAgg")
@@ -64,10 +64,11 @@ class StatisticsWindow(StatisticsView):
         self.label_box.clear()
 
         selected_table = self.files_combo_box.currentText()
-        df = pd.read_sql_query(f"SELECT * FROM '{selected_table}'", conn)
+        if not selected_table:
+            return
+        df = pd.read_sql_query(f"SELECT * FROM {user_table(cursor, selected_table)}", conn)
         cols = df.columns
-        vals = df.iloc[0]
-        for val, col in zip(vals, cols):
+        for col in cols:
             self.label_box.addItem(col)
             self.value_box.addItem(col)
 
@@ -83,7 +84,9 @@ class StatisticsWindow(StatisticsView):
         self.canvas.axes.cla()
 
         selected_table = self.files_combo_box.currentText()
-        df = pd.read_sql_query(f"SELECT * FROM '{selected_table}'", conn)
+        if not selected_table:
+            return
+        df = pd.read_sql_query(f"SELECT * FROM {user_table(cursor, selected_table)}", conn)
 
         value = self.value_box.currentText()
         label = self.label_box.currentText()
@@ -111,8 +114,8 @@ class StatisticsWindow(StatisticsView):
         cursor = kwargs["cursor"]
         self.files_combo_box.clear()
         load_dotenv()
-        user_id = os.getenv("USER")
-        cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
+        user_id = os.getenv("APP_USER_ID")
+        cursor.execute("SELECT table_name FROM tables WHERE userid = ?", (user_id,))
         tables = cursor.fetchall()
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])

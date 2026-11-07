@@ -1,25 +1,33 @@
-# This is Python PyQT6 project that can help you to monitor your expenses
+![EXPENSE EXPLORER](docs/banner.svg)
 
-<p>В проекте присутствует логирование и возможность хранить файлы, а также их анализировать</p>
+# Expense Explorer
 
-**ТЗ:**
-<ol>
-<li>Создание GUI</li>
-<li>Насторойка загрузки файлов в бд</li>
-<li>Подключение бд</li>
-<li>Настройка seaborn для рисования графиков</li>
-</ol>
+A Python desktop learning project for importing CSV/Excel tables, browsing records and plotting expenses with pandas, matplotlib and seaborn.
 
-**TO DO:**
-<ol>
-<li>Upgrade data analysis (switch from matplotlib to seaborn and add the ability to plot different graphs)</li>
-   <ul>
-         <li><s>Add ability to select charts</s></li>
-         <li>Pie charts of prices spent on different categories</li>
-         <li>Columns histplot month to month money spent</li>
-         <li>How price changed for certain products</li>
-   </ul>
+## Run
 
-<li>Add forecasting using sikit-learn</li>
-<li> Add budget management</li>
-</ol>
+```sh
+python -m pip install -r requirements.txt
+python main.py
+```
+
+Create a local account, sign in, import a table and select columns for a histogram or pie chart. Files must include headers. Numeric expense columns are required for meaningful charts.
+
+## Local data
+
+Runtime SQLite defaults to `.data/user_data.db` and creates missing account/table metadata schemas. `EXPENSE_DB_PATH` can select a different file. The historical committed database is not used by default; its provenance has not been certified.
+
+New passwords use salted PBKDF2-SHA256. If an explicitly selected old database has plaintext passwords, a successful login upgrades that account in place. Back up old data before opting into this migration. Unknown users and wrong passwords do not authenticate.
+
+Table access checks the signed-in account against table metadata. Imported values use SQL parameters and identifiers are quoted. This remains a single-user local desktop application, not a hardened multi-user service.
+
+## Validation
+
+```sh
+python -m pip install pytest==8.4.1
+python -m pytest -q tests
+```
+
+Tests cover password verification, SQL-like usernames, unknown accounts, legacy password upgrades and table ownership. An offscreen Qt test imports, browses and deletes a synthetic CSV through the actual controls. Spreadsheet-format and plotting edge cases are not exhaustively covered.
+
+Forecasting and budget planning are not implemented. This repository demonstrates desktop/data tooling rather than a trained prediction model.
