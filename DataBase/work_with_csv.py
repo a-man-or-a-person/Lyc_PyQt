@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-import mysql.connector
+import sqlite3
 
 from dotenv import load_dotenv
 import os
@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
 )
 import UI.csv_ui
-from db_connection import db_conn_wrap
+from db_connection import db_conn_wrap, user_table
 
 
 class CsvLayout(UI.csv_ui.CsvViews):
@@ -41,9 +41,9 @@ class CsvLayout(UI.csv_ui.CsvViews):
         conn = kwargs["conn"]
         cursor = kwargs["cursor"]
         load_dotenv()
-        user_id = os.getenv("USER")
+        user_id = os.getenv("APP_USER_ID")
         cursor.execute(
-            f"SELECT tableid, table_name FROM tables WHERE userid='{user_id}'"
+            "SELECT tableid, table_name FROM tables WHERE userid = ?", (user_id,)
         )
         data = cursor.fetchall()
         self.table.setRowCount(0)
@@ -79,9 +79,10 @@ class CsvLayout(UI.csv_ui.CsvViews):
             QMessageBox.warning(self, "Warning", "You can`t delete this")
             return None
         load_dotenv()
-        user_id = os.getenv("USER")
-        cursor.execute("DELETE FROM tables WHERE tableid=%s", (selected_id,))
-        cursor.execute(f"DROP TABLE `{selected_name}`")
+        user_id = os.getenv("APP_USER_ID")
+        safe_name = user_table(cursor, selected_name)
+        cursor.execute(f"DROP TABLE {safe_name}")
+        cursor.execute("DELETE FROM tables WHERE tableid = ? AND userid = ?", (selected_id, user_id))
         conn.commit()
         self.display_all_files()
 
@@ -105,7 +106,7 @@ class CsvLayout(UI.csv_ui.CsvViews):
         else:
             name = path.split("\\")[-1]
         load_dotenv()
-        user_id = os.getenv("USER")
+        user_id = os.getenv("APP_USER_ID")
         name = f'{user_id}_{"_".join(name.split()).split(".")[0]}'
 
         try:
@@ -119,21 +120,26 @@ class CsvLayout(UI.csv_ui.CsvViews):
                 return
 
         columns = list(sheet1.columns)
+        if not columns:
+            QMessageBox.warning(self, "Error", "File has no columns")
+            return
+        name = name.replace("`", "``")
+        columns = [str(column).replace("`", "``") for column in columns]
         db_request = f"CREATE TABLE `{name}` ( id INTEGER PRIMARY KEY AUTOINCREMENT,"
         for i in columns[:-1]:
-            db_request += f"{i} TEXT, "
-        db_request += f"{columns[-1]} TEXT)"
+            db_request += f"`{i}` TEXT, "
+        db_request += f"`{columns[-1]}` TEXT)"
         try:
             cursor.execute(db_request)
-        except mysql.connector.Error as err:
+        except sqlite3.Error as err:
             QMessageBox.critical(
                 self, "Table creation failed", f"Table already exists or error: {err}"
             )
             return None
-        db_request = f"""INSERT INTO `{name}` ({', '.join(columns)}) VALUES ({', '.join(['?' for _ in range(len(columns))])})"""
+        db_request = f"""INSERT INTO `{name}` ({', '.join('`' + column + '`' for column in columns)}) VALUES ({', '.join(['?' for _ in range(len(columns))])})"""
         cursor.executemany(db_request, sheet1.values.tolist())
         cursor.execute(
-            "INSERT INTO tables (userid, table_name) VALUES (?, ?)", (user_id, name)
+            "INSERT INTO tables (userid, table_name) VALUES (?, ?)", (user_id, name.replace("``", "`"))
         )
         conn.commit()
         self.display_all_files()

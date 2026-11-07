@@ -1,6 +1,7 @@
 import os
+import sqlite3
 import UI.login_ui
-from db_connection import db_conn_wrap
+from db_connection import db_conn_wrap, hash_password, authenticate_user
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import PyQt6.QtWidgets
@@ -51,8 +52,12 @@ class Login(UI.login_ui.LoginWindow):
         dialog = CreateAccountDialog()
         if dialog.exec() == QDialog.DialogCode.Accepted:
             username, password = dialog.get_credentials()
-            cursor.execute("INSERT INTO Users (username, password) VALUES (?, ?)", (username, password))
-            conn.commit()
+            try:
+                cursor.execute("INSERT INTO Users (username, password) VALUES (?, ?)", (username, hash_password(password)))
+                conn.commit()
+            except sqlite3.IntegrityError:
+                QMessageBox.warning(self, "Error", "Username already exists")
+                return
             QMessageBox.information(self, "Success", "Account created successfully!")
 
     @db_conn_wrap
@@ -65,11 +70,9 @@ class Login(UI.login_ui.LoginWindow):
         cursor = kwargs["cursor"]
         username = self.username_input.text()
         password = self.password_input.text()
-        cursor.execute(f"SELECT password FROM Users WHERE username = '{username}'")
-        pas = cursor.fetchone()[0]
-        if pas and password == pas:
-            cursor.execute(f'SELECT userid FROM Users WHERE username = "{username}"')
-            os.environ["USER"] = str(cursor.fetchone()[0])
+        user_id = authenticate_user(conn, username, password)
+        if user_id is not None:
+            os.environ["APP_USER_ID"] = str(user_id)
             self.parent.show_main_window()
         else:
             self.username_input.clear()

@@ -4,7 +4,7 @@ import os
 import PyQt6.QtWidgets
 
 
-from db_connection import db_conn_wrap
+from db_connection import db_conn_wrap, user_table
 import UI.Tabel_work_ui
 
 from dotenv import load_dotenv
@@ -32,9 +32,9 @@ class Table_work(UI.Tabel_work_ui.TableWork):
         # conn = self.conn
         # cursor = self.cur
         self.files_combo_box.clear()
-        user_id = os.environ.get("USER")
+        user_id = os.environ.get("APP_USER_ID")
 
-        cursor.execute(f"SELECT table_name FROM tables WHERE userid='{user_id}'")
+        cursor.execute("SELECT table_name FROM tables WHERE userid = ?", (user_id,))
         tables = cursor.fetchall()
         if tables:
             self.files_combo_box.addItems([x[0] for x in tables])
@@ -48,8 +48,8 @@ class Table_work(UI.Tabel_work_ui.TableWork):
             )
         conn = kwargs["conn"]
         cursor = kwargs["cursor"]
-        table = "tables"
-        a = "SELECT * FROM {0} LIMIT 1".format(table)
+        table = self.files_combo_box.currentText()
+        a = f"SELECT * FROM {user_table(cursor, table)} LIMIT 0"
         cursor.execute(a)
         res = [x[0] for x in cursor.description]
         cursor.fetchall()
@@ -64,7 +64,10 @@ class Table_work(UI.Tabel_work_ui.TableWork):
         conn = kwargs["conn"]
         cursor = kwargs["cursor"]
         table = self.files_combo_box.currentText()
-        a = f"SELECT * FROM '{table}'"
+        if not table:
+            self.table.setRowCount(0)
+            return
+        a = f"SELECT * FROM {user_table(cursor, table)}"
         cursor.execute(a)
         data = cursor.fetchall()
         self.table.setRowCount(0)
@@ -95,8 +98,8 @@ class Table_work(UI.Tabel_work_ui.TableWork):
             return None
 
         selected_id = self.table.item(selected, 0).text()
-        request = f"DELETE FROM {table} WHERE id = '{selected_id}'"
-        cursor.execute(request)
+        request = f"DELETE FROM {user_table(cursor, table)} WHERE id = ?"
+        cursor.execute(request, (selected_id,))
         conn.commit()
         self.get_all_items()
 
